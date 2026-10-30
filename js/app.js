@@ -110,9 +110,10 @@
                 var v = qtyOf(f.g)[i];
                 html += '<span class="tier">';
                 html += '<img src="' + f.tiers[i].img + '" alt="" title="' + esc(f.tiers[i].n) + '" loading="lazy">';
-                // 数量为 0 时带 .zero（半透明弱化，与 LvchaxsBS 的 Opacity=0.4 一致）
-                html += '<input type="number" min="0" max="9999" maxlength="4" class="qty' + (v === 0 ? ' zero' : '') + '"' +
-                    ' data-g="' + f.g + '" data-i="' + i + '" value="' + v + '">';
+                // 数量为 0 时输入框留空：点进去直接输入，不必先删掉那个 0
+                html += '<input type="number" min="0" max="9999" maxlength="4" class="qty"' +
+                    ' data-g="' + f.g + '" data-i="' + i + '"' +
+                    (v === 0 ? '' : ' value="' + v + '"') + '>';
                 html += '</span>';
             }
 
@@ -154,7 +155,6 @@
         var g = el.getAttribute('data-g'), i = +el.getAttribute('data-i');
         var n = v ? parseInt(v, 10) : 0;
         qtyOf(g)[i] = Math.min(9999, n);
-        el.classList.toggle('zero', n === 0);
         save();
         refreshRow(g);
     });

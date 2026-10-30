@@ -153,9 +153,6 @@ main {
   border-color: var(--bar-b);
 }
 
-/* 数量为 0 时半透明弱化（照抄 LvchaxsBS：DataTrigger Text="0" ⇒ Opacity 0.4） */
-.tier input.zero { opacity: .4; }
-
 /* 百分比：只是个数字，不是按钮（本工具只记录数量） */
 .pct {
   width: 56px;   /* 要放得下 2 位小数的「100.00%」 */
