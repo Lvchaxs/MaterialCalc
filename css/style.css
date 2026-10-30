@@ -110,14 +110,13 @@ main {
   padding: 0 14px 24px;
 }
 
-/* 一行一族：三档（图标 + 数量 + 目标）并列，右边是这条的进度 */
+/* 一行一族：与 LvchaxsBS 材料统计页同一排法
+   —— 【图标|输入框】×3 → 进度条（吃掉剩余宽度）→ 百分比，整行不换行。
+   ★ 行本身不加边框/背景/圆角（不要卡片感）。 */
 .fam {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
   padding: 6px 10px;
 }
 
@@ -125,11 +124,29 @@ main {
 
 /* 材料图标本身是无背景透明图，不要加圆角（会把边角裁掉） */
 .tier img { width: 28px; height: 28px; flex: none; }
+
+/* 数量输入框：照抄 LvchaxsBS 的 QuantityBoxStyle
+   —— 默认 背景透明 + 边框透明（看不出是个框），数字居中、加粗；
+      只在鼠标悬停 / 正在输入时才显出边框，方便辨认点到哪了。 */
 .tier input[type="number"] {
   width: 58px;
+  margin-right: 6px;
   padding: 4px 6px;
-  text-align: right;
+  text-align: center;
   font-size: 13px;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+.tier input[type="number"]:hover {
+  background: var(--hover);
+  border-color: var(--border);
+}
+.tier input[type="number"]:focus {
+  outline: none;
+  background: var(--hover);
+  border-color: var(--bar-b);
 }
 
 .pct {
@@ -225,13 +242,14 @@ main {
 
 .dlg-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 
-/* 窄屏：三档挤一行会超宽，把进度条换行到下一行，输入框同步收窄 */
+/* 窄屏：整行仍然不换行（进度条照旧跟在第三个输入框后面），只把各元素同步收窄 */
 @media (max-width: 480px) {
   main { padding: 0 10px 20px; }
   .controls { padding: 8px 10px; }
-  .fam { flex-wrap: wrap; gap: 6px; padding: 6px 8px; }
+  .fam { gap: 4px; padding: 6px 4px; }
+  .tier { gap: 2px; }
   .tier img { width: 24px; height: 24px; }
-  .tier input[type="number"] { width: 46px; padding: 4px 4px; font-size: 12px; }
-  .pct { order: 2; margin-left: auto; }
-  .bar { order: 3; flex-basis: 100%; }
+  .tier input[type="number"] { width: 40px; margin-right: 4px; padding: 4px 2px; font-size: 12px; }
+  .bar { flex: 1 1 30px; min-width: 30px; }
+  .pct { width: 50px; font-size: 11px; padding: 2px 2px; }
 }
