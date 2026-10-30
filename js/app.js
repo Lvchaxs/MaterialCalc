@@ -50,7 +50,7 @@
 
     /* 进度（0~1）：★ 与 LvchaxsBS 的 Services.MonsterMaterialService.CalcProgressPercent 完全一致
        —— 三档按合成关系（3 最低 = 1 中等、3 中等 = 1 最高）折算成「最高品质等价数」，
-          再除以三档各满 9999 的全满值 ⇒ 与目标数量无关。 */
+          再除以三档各满 9999 的全满值（= 14443），要满 9999 才算 100%。 */
     function progressOf(g) {
         var q = qtyOf(g);
         var equiv = q[0] + q[1] / 3 + q[2] / 9;
@@ -224,7 +224,7 @@
                 n++;
             });
         }
-        // ② 本项目自己导出的备份格式（含目标数量）
+        // ② 本项目自己导出的备份格式（只含数量）
         else if (Array.isArray(data.families)) {
             data.families.forEach(function (f) {
                 if (f.q && f.q.length === 3) {

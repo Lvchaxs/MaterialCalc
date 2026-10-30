@@ -26,7 +26,7 @@ html[data-theme="dark"] {
 
 /* 必须放在所有规则之前又带 !important：
    作者样式表的 display 会盖掉浏览器默认的 [hidden]{display:none}，
-   不补这条的话 .mask / .chip 加了 hidden 属性也照样显示（弹窗关不掉）。 */
+   不补这条的话元素加了 hidden 属性也照样显示（关不掉）。 */
 [hidden] { display: none !important; }
 
 /* 数量输入框：去掉浏览器自带的上下加减箭头（瞄准网页里干净的输入框观感） */
@@ -153,7 +153,7 @@ main {
 /* 数量为 0 时半透明弱化（照抄 LvchaxsBS：DataTrigger Text="0" ⇒ Opacity 0.4） */
 .tier input.zero { opacity: .4; }
 
-/* 百分比：只是个数字，不再是可点的按钮（本工具只记录数量，没有目标数量可改） */
+/* 百分比：只是个数字，不是按钮（本工具只记录数量） */
 .pct {
   width: 56px;   /* 要放得下 2 位小数的「100.00%」 */
   text-align: right;
