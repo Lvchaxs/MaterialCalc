@@ -65,22 +65,12 @@
     function isDone(g) { return progressOf(g) * 100 >= 99.995; }
 
     function visibleFamilies() {
-        var kw = document.getElementById('q').value.trim();
         var kind = document.getElementById('kind').value;
         var hide = document.getElementById('hide-done').checked;
 
         var out = families.filter(function (f) {
             if (kind && f.kind !== kind) return false;
             if (hide && isDone(f.g)) return false;
-            if (kw) {
-                var hit = f.monster.indexOf(kw) >= 0;
-                if (!hit) {
-                    for (var i = 0; i < f.tiers.length; i++) {
-                        if (f.tiers[i].n.indexOf(kw) >= 0) { hit = true; break; }
-                    }
-                }
-                if (!hit) return false;
-            }
             return true;
         });
 
@@ -126,13 +116,7 @@
     }
 
     /* ================= 交互 ================= */
-    var refilterTimer = 0;
-    function reRender() {
-        clearTimeout(refilterTimer);
-        refilterTimer = setTimeout(render, 180);
-    }
 
-    document.getElementById('q').addEventListener('input', reRender);
     document.getElementById('kind').addEventListener('change', function () {
         state.opts.kind = this.value; save(); render();
     });
@@ -323,7 +307,6 @@
     });
 
     /* ================= 启动 ================= */
-    document.getElementById('q').value = '';
     document.getElementById('kind').value = state.opts.kind || '';
     document.getElementById('sort').value = state.opts.sort || 'id';
     document.getElementById('hide-done').checked = !!state.opts.hide;

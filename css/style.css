@@ -92,8 +92,6 @@ button:active { transform: scale(1.15); }
   padding: 10px 14px;
 }
 
-.controls input[type="search"] { flex: 1 1 160px; min-width: 120px; }
-
 .controls label {
   display: inline-flex;
   align-items: center;
