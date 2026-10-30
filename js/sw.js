@@ -1,6 +1,6 @@
 /* Service Worker：装好之后断网也能打开（全部逻辑在前端），联网时后台检查新版。
    更新流程：文件有变动 → 新版在后台装好 → 页面右下角出现提示 → 用户点一下才切换。 */
-var CACHE = 'lvcalc-v11';
+var CACHE = 'lvcalc-v12';
 
 var SHELL = [
     './',
@@ -33,13 +33,24 @@ self.addEventListener('fetch', function (e) {
     var req = e.request;
     if (req.method !== 'GET') return;
 
-    // 页面：优先取网络（拿到就是最新版），断网才退回缓存
-    if (req.mode === 'navigate') {
+    var path = new URL(req.url).pathname;
+
+    // 页面 + CSS/JS：优先取网络 ⇒ 刷新即最新版，断网才退回缓存。
+    //   ★ 这几个必须先走网络：它们是 cache-first 时，刷新页面拿到的仍是旧 css/js
+    //     （Ctrl+F5 也绕不过 SW 缓存），表现就是"改了线上却一直没生效"。
+    //     只有图标（几百 KB）才留 cache-first，那是下面另一段的事。
+    if (req.mode === 'navigate' || /\.(css|js)$/.test(path)) {
+        if (path.indexOf('/sw.js') >= 0) return;          // 别拦截自己
         e.respondWith(fetch(req).then(function (res) {
-            var copy = res.clone();
-            caches.open(CACHE).then(function (c) { c.put(req, copy); });
-            return res;
-        }).catch(function () { return caches.match('./index.html'); }));
+            if (res && res.ok) {
+                var copy = res.clone();
+                caches.open(CACHE).then(function (c) { c.put(req, copy); });
+                return res;
+            }
+            throw new Error('bad status');
+        }).catch(function () {
+            return caches.match(req.mode === 'navigate' ? './index.html' : req);
+        }));
         return;
     }
 

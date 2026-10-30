@@ -159,6 +159,27 @@
         refreshRow(g);
     });
 
+    // 点进输入框时里面若是 0，直接清掉 ⇒ 不用先删 0 再输入
+    listEl.addEventListener('focusin', function (e) {
+        var el = e.target;
+        if (el.classList.contains('qty') && el.value === '0') el.value = '';
+    });
+
+    // 移开焦点时归位：空着的 / 只填了 0 的一律显示为空（存的就是 0）
+    listEl.addEventListener('focusout', function (e) {
+        var el = e.target;
+        if (!el.classList.contains('qty')) return;
+        if (el.value === '' || parseInt(el.value, 10) === 0) {
+            el.value = '';
+            var g = el.getAttribute('data-g'), i = +el.getAttribute('data-i');
+            if (qtyOf(g)[i] !== 0) {
+                qtyOf(g)[i] = 0;
+                save();
+                refreshRow(g);
+            }
+        }
+    });
+
     function refreshRow(g) {
         var fam = listEl.querySelector('.fam[data-g="' + g + '"]');
         if (!fam) return;
