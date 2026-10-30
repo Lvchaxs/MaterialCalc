@@ -153,6 +153,15 @@ main {
   border-color: var(--bar-b);
 }
 
+/* 数量为 0 时框里那个 0 是 placeholder 水印，**不是真值**：
+   敲第一个数字它自动让位（不用先删 0），与 LvchaxsBS 的 Opacity=0.4 弱化观感对齐。
+   ⛔ 千万别把它写成 value="0" —— 那是真值，点进去还得手动删。 */
+.tier input[type="number"]::placeholder,
+.tier input[type="number"]::-webkit-input-placeholder {
+  color: var(--text-2);
+  opacity: .4;
+}
+
 /* 百分比：只是个数字，不是按钮（本工具只记录数量） */
 .pct {
   width: 56px;   /* 要放得下 2 位小数的「100.00%」 */

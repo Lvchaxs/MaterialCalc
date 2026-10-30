@@ -110,8 +110,9 @@
                 var v = qtyOf(f.g)[i];
                 html += '<span class="tier">';
                 html += '<img src="' + f.tiers[i].img + '" alt="" title="' + esc(f.tiers[i].n) + '" loading="lazy">';
-                // 数量为 0 时输入框留空：点进去直接输入，不必先删掉那个 0
-                html += '<input type="number" min="0" max="9999" maxlength="4" class="qty"' +
+                // 数量为 0 时输入框里没有真实内容，只靠 placeholder 显示一个淡 0（不是值）：
+                // 一敲数字它就自动让位，不用先删 0。有值时不输出 value 之外的任何东西。
+                html += '<input type="number" min="0" max="9999" maxlength="4" class="qty" placeholder="0"' +
                     ' data-g="' + f.g + '" data-i="' + i + '"' +
                     (v === 0 ? '' : ' value="' + v + '"') + '>';
                 html += '</span>';
@@ -157,27 +158,6 @@
         qtyOf(g)[i] = Math.min(9999, n);
         save();
         refreshRow(g);
-    });
-
-    // 点进输入框时里面若是 0，直接清掉 ⇒ 不用先删 0 再输入
-    listEl.addEventListener('focusin', function (e) {
-        var el = e.target;
-        if (el.classList.contains('qty') && el.value === '0') el.value = '';
-    });
-
-    // 移开焦点时归位：空着的 / 只填了 0 的一律显示为空（存的就是 0）
-    listEl.addEventListener('focusout', function (e) {
-        var el = e.target;
-        if (!el.classList.contains('qty')) return;
-        if (el.value === '' || parseInt(el.value, 10) === 0) {
-            el.value = '';
-            var g = el.getAttribute('data-g'), i = +el.getAttribute('data-i');
-            if (qtyOf(g)[i] !== 0) {
-                qtyOf(g)[i] = 0;
-                save();
-                refreshRow(g);
-            }
-        }
     });
 
     function refreshRow(g) {
