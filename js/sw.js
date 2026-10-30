@@ -1,6 +1,6 @@
 /* Service Worker：装好之后断网也能打开（全部逻辑在前端），联网时后台检查新版。
    更新流程：文件有变动 → 新版在后台装好 → 页面右下角出现提示 → 用户点一下才切换。 */
-var CACHE = 'lvcalc-v9';
+var CACHE = 'lvcalc-v10';
 
 var SHELL = [
     './',

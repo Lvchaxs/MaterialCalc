@@ -126,16 +126,19 @@ main {
 .tier img { width: 32px; height: 32px; flex: none; }
 
 /* 数量输入框：照抄 LvchaxsBS 的 QuantityBoxStyle
-   —— 默认 背景透明 + 边框透明（看不出是个框），数字居中、加粗；
+   —— 默认 背景透明 + 边框透明（看不出是个框），数字居中；
       只在鼠标悬停 / 正在输入时才显出边框，方便辨认点到哪了。
-   ★ 窄框 + 小字：省下来的横向空间全部让给右侧进度条。 */
+   ★ 窄框：省下来的横向空间全部让给右侧进度条。
+   ★ 字号 / 字重 / 字体族与右侧百分比完全一致（.pct），
+     不加粗 —— 加粗会让同样 12px 的数字看起来比百分比大一圈。 */
 .tier input[type="number"] {
   width: 50px;
   margin-right: 4px;
   padding: 4px 6px;
   text-align: center;
+  font-family: inherit;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 400;
   background: transparent;
   border: 1px solid transparent;
   border-radius: 6px;
