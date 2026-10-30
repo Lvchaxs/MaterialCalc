@@ -9,7 +9,6 @@
     if (!DATA) { document.body.innerHTML = '<p style="padding:20px">数据未加载：请先运行 tools/build_data.py</p>'; return; }
 
     var families = DATA.families;
-    var defaultTargets = DATA.defaultTargets;
     var idToGroup = {};
     families.forEach(function (f) { if (f.dm) idToGroup[f.dm] = f.g; });
 
@@ -17,13 +16,12 @@
     var state = load();
 
     function load() {
-        var s = { qty: {}, tgt: {}, opts: { kind: '', sort: 'id', hide: false } };
+        var s = { qty: {}, opts: { kind: '', sort: 'id', hide: false } };
         try {
             var raw = localStorage.getItem(STORE_KEY);
             if (raw) {
                 var saved = JSON.parse(raw);
                 if (saved && saved.qty) s.qty = saved.qty;
-                if (saved && saved.tgt) s.tgt = saved.tgt;
                 if (saved && saved.opts) s.opts = saved.opts;
             }
         } catch (e) { }
@@ -43,10 +41,6 @@
         return state.qty[g];
     }
 
-    function tgtOf(g) {
-        if (!state.tgt[g]) state.tgt[g] = defaultTargets.slice();
-        return state.tgt[g];
-    }
 
     /* ================= 渲染 ================= */
     var listEl = document.getElementById('list');
@@ -66,12 +60,9 @@
     /* 进度文字：与 C# 的 ProgressText 一致，保留 2 位小数（例：0.06%） */
     function pctOf(g) { return (progressOf(g) * 100).toFixed(2); }
 
-    function isDone(g) {
-        var q = qtyOf(g), t = tgtOf(g);
-        if (t.every(function (x) { return x <= 0; })) return false;
-        for (var i = 0; i < 3; i++) if (q[i] < t[i]) return false;
-        return true;
-    }
+    /* 是否已满：照抄 LvchaxsBS 的 IsFull —— 进度 ≥ 99.995%
+       （阈值取 99.995 是因为进度文字保留 2 位小数，到这个值显示出来就是「100.00%」） */
+    function isDone(g) { return progressOf(g) * 100 >= 99.995; }
 
     function visibleFamilies() {
         var kw = document.getElementById('q').value.trim();
@@ -116,14 +107,17 @@
 
             // 三档并列：图标 + 数量（和 LvchaxsBS 材料统计页一行一族的排版一致）
             for (var i = 0; i < 3; i++) {
+                var v = qtyOf(f.g)[i];
                 html += '<span class="tier">';
                 html += '<img src="' + f.tiers[i].img + '" alt="" title="' + esc(f.tiers[i].n) + '" loading="lazy">';
-                html += '<input type="number" min="0" max="9999" class="qty" data-g="' + f.g + '" data-i="' + i + '" value="' + qtyOf(f.g)[i] + '">';
+                // 数量为 0 时带 .zero（半透明弱化，与 LvchaxsBS 的 Opacity=0.4 一致）
+                html += '<input type="number" min="0" max="9999" maxlength="4" class="qty' + (v === 0 ? ' zero' : '') + '"' +
+                    ' data-g="' + f.g + '" data-i="' + i + '" value="' + v + '">';
                 html += '</span>';
             }
 
             html += '<span class="bar"><i style="width:' + p + '%"></i></span>';
-            html += '<button class="pct" data-g="' + f.g + '" title="点击改目标数量">' + p + '%</button>';
+            html += '<span class="pct">' + p + '%</span>';
             html += '</div>';
         });
         listEl.innerHTML = html;
@@ -152,8 +146,15 @@
         var el = e.target;
         if (!el.classList.contains('qty')) return;
 
+        // ★ 上限 9999 ⇒ 只留数字、最多 4 位
+        //   （type=number 的 maxlength 浏览器不认，HTML5 规范里它只对 text 类生效，只能自己截）
+        var v = el.value.replace(/\D/g, '').slice(0, 4);
+        if (v !== el.value) el.value = v;
+
         var g = el.getAttribute('data-g'), i = +el.getAttribute('data-i');
-        qtyOf(g)[i] = Math.max(0, Math.min(9999, parseInt(el.value, 10) || 0));
+        var n = v ? parseInt(v, 10) : 0;
+        qtyOf(g)[i] = Math.min(9999, n);
+        el.classList.toggle('zero', n === 0);
         save();
         refreshRow(g);
     });
@@ -166,65 +167,8 @@
         fam.querySelector('.pct').textContent = p + '%';
     }
 
-    /* ================= 目标数量：点百分比弹出小窗改 ================= */
-    var mask = document.getElementById('tgt-mask');
-    var tgtRows = document.getElementById('tgt-rows');
-    var editingGroup = 0;
-
-    function familyOf(g) {
-        for (var i = 0; i < families.length; i++) if (families[i].g === +g) return families[i];
-        return null;
-    }
-
-    listEl.addEventListener('click', function (e) {
-        var btn = e.target.closest('.pct');
-        if (btn) openTargets(btn.getAttribute('data-g'));
-    });
-
-    function openTargets(g) {
-        var f = familyOf(g);
-        if (!f) return;
-        editingGroup = +g;
-
-        var t = tgtOf(editingGroup);
-        var html = '';
-        for (var i = 0; i < 3; i++) {
-            html += '<div class="dlg-row">';
-            html += '<img src="' + f.tiers[i].img + '" alt="">';
-            html += '<span>' + esc(f.tiers[i].n) + '</span>';
-            html += '<input type="number" min="0" max="9999" class="dlg-tgt" data-i="' + i + '" value="' + t[i] + '">';
-            html += '</div>';
-        }
-        tgtRows.innerHTML = html;
-        mask.hidden = false;
-        var first = tgtRows.querySelector('input');
-        if (first) first.focus();
-    }
-
-    function closeTargets() { mask.hidden = true; }
-
-    document.getElementById('tgt-cancel').addEventListener('click', closeTargets);
-    mask.addEventListener('click', function (e) { if (e.target === mask) closeTargets(); });
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && !mask.hidden) closeTargets();
-    });
-
-    document.getElementById('tgt-ok').addEventListener('click', function () {
-        var inputs = tgtRows.querySelectorAll('.dlg-tgt');
-        var t = tgtOf(editingGroup);
-        for (var i = 0; i < inputs.length; i++) {
-            t[i] = Math.max(0, Math.min(9999, parseInt(inputs[i].value, 10) || 0));
-        }
-        save();
-        refreshRow(editingGroup);
-        closeTargets();
-        // 目标变了 ⇒ 「按进度排序」「隐藏已完成」的可见结果可能跟着变
-        if (document.getElementById('sort').value === 'progress' ||
-            document.getElementById('hide-done').checked) render();
-    });
-
     document.getElementById('btn-reset').addEventListener('click', function () {
-        if (!confirm('清空全部材料的数量？（目标数量保留）')) return;
+        if (!confirm('清空全部材料的数量？')) return;
         state.qty = {};
         save();
         render();
@@ -287,11 +231,6 @@
                     qtyOf(f.g)[0] = clamp(f.q[0]);
                     qtyOf(f.g)[1] = clamp(f.q[1]);
                     qtyOf(f.g)[2] = clamp(f.q[2]);
-                }
-                if (f.t && f.t.length === 3) {
-                    tgtOf(f.g)[0] = clamp(f.t[0]);
-                    tgtOf(f.g)[1] = clamp(f.t[1]);
-                    tgtOf(f.g)[2] = clamp(f.t[2]);
                 }
                 n++;
             });
