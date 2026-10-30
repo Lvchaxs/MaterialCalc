@@ -16,13 +16,21 @@
     var state = load();
 
     function load() {
-        var s = { qty: {}, opts: { kind: '', sort: 'id', hide: false } };
+        // ★ 与 LvchaxsBS 的 MonsterMaterialSettings 同名同义：
+        //   sort 0=默认（背包顺序）1=进度；desc=倒序；hide=隐藏 100%（IsFull）
+        var s = { qty: {}, opts: { sort: 0, desc: false, hide: false } };
         try {
             var raw = localStorage.getItem(STORE_KEY);
             if (raw) {
                 var saved = JSON.parse(raw);
                 if (saved && saved.qty) s.qty = saved.qty;
-                if (saved && saved.opts) s.opts = saved.opts;
+                if (saved && saved.opts) {
+                    // 旧版存的是 kind / sort:'id'|'progress'，顺手迁移成新结构
+                    var o = saved.opts;
+                    s.opts.sort = (o.sort === 1 || o.sort === 'progress') ? 1 : 0;
+                    s.opts.desc = !!o.desc;
+                    s.opts.hide = !!o.hide;
+                }
             }
         } catch (e) { }
         return s;
@@ -64,18 +72,25 @@
        （阈值取 99.995 是因为进度文字保留 2 位小数，到这个值显示出来就是「100.00%」） */
     function isDone(g) { return progressOf(g) * 100 >= 99.995; }
 
+    /* 照抄 C# 的 BuildVisibleRows + ApplySortTo：
+       先按「族号升序」排好当基准 ⇒ 进度模式再按百分比排 ⇒ 默认模式的倒序直接整串 Reverse。
+       ★ 隐藏 100% 用的是 IsFull（≥ 99.995%），与主程序同一个阈值。 */
     function visibleFamilies() {
-        var kind = document.getElementById('kind').value;
-        var hide = document.getElementById('hide-done').checked;
+        var out = families.slice();
+        if (state.opts.hide) {
+            out = out.filter(function (f) { return !isDone(f.g); });
+        }
 
-        var out = families.filter(function (f) {
-            if (kind && f.kind !== kind) return false;
-            if (hide && isDone(f.g)) return false;
-            return true;
-        });
+        out.sort(function (a, b) { return a.g - b.g; });
 
-        if (document.getElementById('sort').value === 'progress') {
-            out.sort(function (a, b) { return progressOf(b.g) - progressOf(a.g); });
+        if (state.opts.sort === 1) {
+            out.sort(function (a, b) {
+                return state.opts.desc
+                    ? progressOf(b.g) - progressOf(a.g)
+                    : progressOf(a.g) - progressOf(b.g);
+            });
+        } else if (state.opts.desc) {
+            out.reverse();
         }
         return out;
     }
@@ -117,15 +132,35 @@
 
     /* ================= 交互 ================= */
 
-    document.getElementById('kind').addEventListener('change', function () {
-        state.opts.kind = this.value; save(); render();
+    /* 排序按钮：照抄 C# 的 SortOption_Click —— 两组各自互斥，隐藏 100% 是独立开关 */
+    var sortBar = document.getElementById('sort-bar');
+
+    sortBar.addEventListener('click', function (e) {
+        var btn = e.target.closest('.sort-opt');
+        if (!btn) return;
+
+        var k = btn.getAttribute('data-k'), v = +btn.getAttribute('data-v');
+        if (k === 'mode') state.opts.sort = v;
+        else if (k === 'dir') state.opts.desc = (v === 1);
+        else if (k === 'hide') state.opts.hide = !state.opts.hide;
+        else return;
+
+        save();
+        syncSortButtons();
+        render();
     });
-    document.getElementById('sort').addEventListener('change', function () {
-        state.opts.sort = this.value; save(); render();
-    });
-    document.getElementById('hide-done').addEventListener('change', function () {
-        state.opts.hide = this.checked; save(); render();
-    });
+
+    function syncSortButtons() {
+        var o = state.opts;
+        var btns = sortBar.querySelectorAll('.sort-opt');
+        for (var i = 0; i < btns.length; i++) {
+            var k = btns[i].getAttribute('data-k'), v = +btns[i].getAttribute('data-v');
+            var on = (k === 'mode' && o.sort === v)
+                || (k === 'dir' && (o.desc ? 1 : 0) === v)
+                || (k === 'hide' && (o.hide ? 1 : 0) === v);
+            btns[i].classList.toggle('on', on);
+        }
+    }
 
     // 改数量：只刷新这一行的进度条，不整页重排（否则输入焦点会丢）
     listEl.addEventListener('input', function (e) {
@@ -151,14 +186,6 @@
         fam.querySelector('.bar > i').style.width = p + '%';
         fam.querySelector('.pct').textContent = p + '%';
     }
-
-    document.getElementById('btn-reset').addEventListener('click', function () {
-        if (!confirm('清空全部材料的数量？')) return;
-        state.qty = {};
-        save();
-        render();
-        toast('已清空数量');
-    });
 
     /* ================= 主题 ================= */
     var root = document.documentElement;
@@ -307,8 +334,6 @@
     });
 
     /* ================= 启动 ================= */
-    document.getElementById('kind').value = state.opts.kind || '';
-    document.getElementById('sort').value = state.opts.sort || 'id';
-    document.getElementById('hide-done').checked = !!state.opts.hide;
+    syncSortButtons();
     render();
 })();

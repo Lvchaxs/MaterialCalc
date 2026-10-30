@@ -19,17 +19,17 @@
     </header>
 
     <section class="controls">
-        <select id="kind">
-            <option value="">全部</option>
-            <option value="精英">精英</option>
-            <option value="小怪">小怪</option>
-        </select>
-        <select id="sort">
-            <option value="id">默认排序</option>
-            <option value="progress">按进度</option>
-        </select>
-        <label><input type="checkbox" id="hide-done"> 隐藏已完成</label>
-        <button id="btn-reset">清空数量</button>
+        <!-- 排序：照抄 LvchaxsBS 怪物材料页的 SortOptionButtonStyle
+             （默认/进度 ｜ 升序/降序 ｜ 隐藏100%），★ 平铺显示，不套那个可折叠的「排序 ‹」 -->
+        <div class="sort-bar" id="sort-bar">
+            <button class="sort-opt" data-k="mode" data-v="0">默认</button>
+            <button class="sort-opt" data-k="mode" data-v="1">进度</button>
+            <span class="sep"></span>
+            <button class="sort-opt" data-k="dir" data-v="0">升序</button>
+            <button class="sort-opt" data-k="dir" data-v="1">降序</button>
+            <span class="sep"></span>
+            <button class="sort-opt" data-k="hide" data-v="1">隐藏100%</button>
+        </div>
     </section>
 
     <main id="list"></main>

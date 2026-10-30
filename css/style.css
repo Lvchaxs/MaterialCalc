@@ -8,6 +8,11 @@
   --bar-a: #8FAEA6;
   --bar-b: #67897F;
   --hover: #F0F3F6;
+  /* 下面三个与 LvchaxsBS 主题字典同值，专供排序按钮（SortOptionButtonStyle）使用：
+     PrimaryBrush 蓝条 / AccentSoftBrush 选中底 / HoverBackgroundBrush 悬停玻璃（#9E = 62%） */
+  --accent: #3B82F6;
+  --accent-soft: rgba(59, 130, 246, .13);
+  --glass: rgba(255, 255, 255, .62);
 }
 
 html[data-theme="dark"] {
@@ -20,6 +25,9 @@ html[data-theme="dark"] {
   --bar-a: #8FB5AB;
   --bar-b: #BBD6CE;
   --hover: #2A2F36;
+  --accent: #5B93FF;
+  --accent-soft: rgba(255, 255, 255, .08);
+  --glass: rgba(56, 56, 56, .62);
 }
 
 * { box-sizing: border-box; }
@@ -92,13 +100,62 @@ button:active { transform: scale(1.15); }
   padding: 10px 14px;
 }
 
-.controls label {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+/* ================= 排序按钮（照抄 LvchaxsBS 的 SortOptionButtonStyle） =================
+   常态：透明底 + 次要文字色；悬停：玻璃底 + 文字提亮；
+   选中（Tag=1）：浅蓝底 + 左侧 2px 蓝竖杠 + 文字加粗（★ 不换文字颜色，区分只靠底色和竖杠）。
+   ★ 竖杠用「scaleY 0→1 + EaseOut 0.18s」，与 XAML 的 Rect+ScaleTransform 动画同一套时序。 */
+.sort-bar { display: flex; align-items: center; }
+
+.sort-opt {
+  position: relative;
+  height: 24px;
+  padding: 0 10px 0 11px;      /* 左边 11：给左竖杠留位置，与 XAML Padding="11,0,10,0" 一致 */
+  margin-right: 4px;
+  font-family: inherit;
+  font-size: 12.5px;
   color: var(--text-2);
-  font-size: 13px;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;         /* CornerRadius=4 */
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sort-opt::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 2px;
+  height: 12px;
+  margin-top: -6px;
+  border-radius: 1px;
+  background: var(--accent);  /* PrimaryBrush */
+  opacity: 0;
+  transform: scaleY(0);
+  transition: transform .18s cubic-bezier(0, 0, .58, 1), opacity .08s;   /* EaseOut */
+}
+
+.sort-opt:hover { background: var(--glass); color: var(--text); }
+
+.sort-opt.on {
+  background: var(--accent-soft);
+  font-weight: 700;
+}
+/* 选中态不叠加悬停玻璃（与 XAML 里 selBg 盖住 hoverBg 的顺序一致） */
+.sort-opt.on:hover { background: var(--accent-soft); }
+.sort-opt.on::before { opacity: 1; transform: scaleY(1); }
+
+/* 通用 button 那条 :active 缩放是给主题/导入导出按钮的，排序按钮不要跟着弹 */
+.sort-opt:active { transform: none; }
+
+/* 组之间的竖分隔条：XAML 里是 1×14 的 Border，Margin="6,0,10,0" */
+.sep {
+  width: 1px;
+  height: 14px;
+  margin: 0 10px 0 6px;
+  background: var(--border);
+  flex: none;
 }
 
 main {
@@ -224,6 +281,8 @@ main {
 @media (max-width: 480px) {
   main { padding: 0 10px 20px; }
   .controls { padding: 8px 10px; }
+  /* 五个排序按钮平铺在 320px 宽的屏上会挤出去，允许它自己折行 */
+  .sort-bar { flex-wrap: wrap; row-gap: 2px; }
   .fam { gap: 4px; padding: 6px 4px; }
   .tier { gap: 2px; }
   .tier img { width: 28px; height: 28px; }
