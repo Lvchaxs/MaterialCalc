@@ -1,0 +1,237 @@
+:root {
+  --bg: #F4F6F8;
+  --card: #FFFFFF;
+  --text: #1F2430;
+  --text-2: #5A6280;
+  --border: #E2E6EC;
+  --track: #E6EAEE;
+  --bar-a: #8FAEA6;
+  --bar-b: #67897F;
+  --hover: #F0F3F6;
+}
+
+html[data-theme="dark"] {
+  --bg: #1A1D22;
+  --card: #22262C;
+  --text: #E4E8EE;
+  --text-2: #A9B1CE;
+  --border: #333941;
+  --track: #2E343B;
+  --bar-a: #8FB5AB;
+  --bar-b: #BBD6CE;
+  --hover: #2A2F36;
+}
+
+* { box-sizing: border-box; }
+
+/* 必须放在所有规则之前又带 !important：
+   作者样式表的 display 会盖掉浏览器默认的 [hidden]{display:none}，
+   不补这条的话 .mask / .chip 加了 hidden 属性也照样显示（弹窗关不掉）。 */
+[hidden] { display: none !important; }
+
+/* 数量输入框：去掉浏览器自带的上下加减箭头（瞄准网页里干净的输入框观感） */
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.5 "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand { font-size: 15px; font-weight: 700; }
+.brand .sub {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-2);
+  margin-left: 6px;
+}
+
+.tools { display: flex; gap: 6px; }
+
+button, select, input[type="text"], input[type="search"], input[type="number"] {
+  font: inherit;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+button {
+  cursor: pointer;
+  transition: transform .12s ease, background .12s ease;
+}
+button:hover { background: var(--hover); }
+button:active { transform: scale(1.15); }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+}
+
+.controls input[type="search"] { flex: 1 1 160px; min-width: 120px; }
+
+.controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-2);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 14px 24px;
+}
+
+/* 一行一族：三档（图标 + 数量 + 目标）并列，右边是这条的进度 */
+.fam {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+
+.tier { display: flex; align-items: center; gap: 4px; }
+
+/* 材料图标本身是无背景透明图，不要加圆角（会把边角裁掉） */
+.tier img { width: 28px; height: 28px; flex: none; }
+.tier input[type="number"] {
+  width: 58px;
+  padding: 4px 6px;
+  text-align: right;
+  font-size: 13px;
+}
+
+.pct {
+  width: 56px;   /* 要放得下 2 位小数的「100.00%」 */
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-2);
+  flex: none;
+  background: none;
+  border: 1px dashed transparent;
+  border-radius: 6px;
+  padding: 2px 4px;
+}
+.pct:hover { border-color: var(--border); color: var(--text); }
+
+.bar {
+  flex: 1 1 80px;
+  min-width: 60px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.bar > i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--bar-a), var(--bar-b));
+  transition: width .2s ease;
+}
+
+.chip {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 20;
+  background: var(--bar-b);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-size: 13px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
+  cursor: pointer;
+}
+.chip:hover { background: var(--bar-a); }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 30;
+  background: rgba(0, 0, 0, .82);
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+.toast.show { opacity: 1; }
+
+/* 改目标数量的小弹窗 */
+.mask {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0, 0, 0, .45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.dlg {
+  width: 300px;
+  max-width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.dlg-title { font-weight: 600; margin-bottom: 10px; }
+
+.dlg-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.dlg-row img { width: 26px; height: 26px; flex: none; }
+.dlg-row span { flex: 1 1 auto; font-size: 13px; }
+.dlg-row input { width: 62px; text-align: right; }
+
+.dlg-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+
+/* 窄屏：三档挤一行会超宽，把进度条换行到下一行，输入框同步收窄 */
+@media (max-width: 480px) {
+  main { padding: 0 10px 20px; }
+  .controls { padding: 8px 10px; }
+  .fam { flex-wrap: wrap; gap: 6px; padding: 6px 8px; }
+  .tier img { width: 24px; height: 24px; }
+  .tier input[type="number"] { width: 46px; padding: 4px 4px; font-size: 12px; }
+  .pct { order: 2; margin-left: auto; }
+  .bar { order: 3; flex-basis: 100%; }
+}

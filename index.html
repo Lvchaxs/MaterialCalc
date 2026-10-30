@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>LvchaxsBS 材料计算器</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#8FAEA6">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">LvchaxsBS<span class="sub">材料计算器</span></div>
+        <div class="tools">
+            <button id="btn-theme" title="切换深浅主题">主题</button>
+            <button id="btn-import">导入</button>
+            <button id="btn-export">导出</button>
+        </div>
+    </header>
+
+    <section class="controls">
+        <input type="search" id="q" placeholder="搜索材料 / 怪物">
+        <select id="kind">
+            <option value="">全部</option>
+            <option value="精英">精英</option>
+            <option value="小怪">小怪</option>
+        </select>
+        <select id="sort">
+            <option value="id">默认排序</option>
+            <option value="progress">按进度</option>
+        </select>
+        <label><input type="checkbox" id="hide-done"> 隐藏已完成</label>
+        <button id="btn-reset">清空数量</button>
+    </section>
+
+    <main id="list"></main>
+
+    <button id="update-chip" class="chip" hidden>新版本已就绪 · 点击刷新</button>
+    <div id="toast" class="toast"></div>
+
+    <div id="tgt-mask" class="mask" hidden>
+        <div class="dlg">
+            <div class="dlg-title">目标数量</div>
+            <div id="tgt-rows"></div>
+            <div class="dlg-btns">
+                <button id="tgt-cancel">取消</button>
+                <button id="tgt-ok">确定</button>
+            </div>
+        </div>
+    </div>
+    <input type="file" id="file" accept=".json,application/json" hidden>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
